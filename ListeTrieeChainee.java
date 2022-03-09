@@ -1,56 +1,58 @@
+import java.util.NoSuchElementException;
+
 public class ListeTrieeChainee implements IListeTriee{
     @Override
-    public boolean ajouter(Comparable element) {
+    public boolean ajouter(Comparable element) throws NullPointerException {
         return false;
     }
 
     @Override
-    public int ajouter(IListeTriee autreListe) {
+    public int ajouter(IListeTriee autreListe) throws NullPointerException{
         return 0;
     }
 
     @Override
-    public Comparable elementCourant() {
+    public Comparable elementCourant() throws ListeVideException {
         return null;
     }
 
     @Override
-    public void positionner(Comparable element) {
+    public void positionner(Comparable element) throws ListeVideException, NullPointerException, NoSuchElementException {
 
     }
 
     @Override
-    public void debut() {
+    public void debut() throws ListeVideException{
 
     }
 
     @Override
-    public void fin() {
+    public void fin() throws ListeVideException{
 
     }
 
     @Override
-    public boolean precedent() {
+    public boolean precedent() throws ListeVideException {
         return false;
     }
 
     @Override
-    public boolean suivant() {
+    public boolean suivant() throws ListeVideException{
         return false;
     }
 
     @Override
-    public Comparable supprimer() {
+    public Comparable supprimer() throws ListeVideException {
         return null;
     }
 
     @Override
-    public boolean supprimer(Comparable element) {
+    public boolean supprimer(Comparable element) throws ListeVideException, NullPointerException {
         return false;
     }
 
     @Override
-    public IListeTriee supprimer(IListeTriee autreListe) {
+    public IListeTriee supprimer(IListeTriee autreListe) throws NullPointerException {
         return null;
     }
 
@@ -70,12 +72,13 @@ public class ListeTrieeChainee implements IListeTriee{
     }
 
     @Override
-    public IListeTriee sousListe(Comparable elementDebut, Comparable elementFin) {
+    public IListeTriee sousListe(Comparable elementDebut, Comparable elementFin) throws
+            ListeVideException, NullPointerException, NoSuchElementException {
         return null;
     }
 
     @Override
-    public IListeTriee elementsCommuns(IListeTriee autreListe) {
+    public IListeTriee elementsCommuns(IListeTriee autreListe) throws NullPointerException {
         return null;
     }
 
