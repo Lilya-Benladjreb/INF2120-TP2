@@ -7,9 +7,7 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
     private Maillon <T> position;
 
     public ListeTrieeChainee(){
-        this.elements = elements;
         this.nbElements = 0;
-        this.position = position;
     }
 
 
@@ -37,27 +35,49 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      */
     @Override
     public boolean ajouter(Comparable element) throws NullPointerException {
-        // premier element de la liste
-        Maillon<T> p = elements;
+        Maillon <T> nouveau = new Maillon<T>((T) element);
+        Comparable info;
 
         //Traitement de l'élément si celui-ci est null
         if(element == null){
-            throw new NullPointerException();
+            throw new NullPointerException("L'élement ne peut être nul.");
+        }
+
+        if(elements == null){
+            elements = new Maillon<T>((T) element);
+            position = elements;
+            return true;
         } else if(elementExiste(element)){
             //Traitement de l'élément s'il est déjà présent dans la liste
             return false;
         }else {
             //Traitement de l'élément pour l'ajout
+            Maillon<T> tmp = elements;
+            position = elements;
+
             for (int i = 1 ; i < nbElements ; i++ ){
-                p = p.suivant();
-                p.modifierSuivant(new Maillon<T>(element, p.suivant()));
-                // ** NE COMPILE PAS ** A CORRIGER
+                if(elements != null){
+                    while (elements.suivant() != null && elements.info().compareTo(element) < 0){
+                        position = elements.suivant();
+                    }
+                }
+
+                nouveau.modifierSuivant(elements.suivant());
+                elements.modifierSuivant(nouveau);
+
+                if(elements.info().compareTo(element) > 0){
+                    info = nouveau.info();
+                    nouveau.modifierInfo(elements.info());
+                    elements.modifierInfo((T) info);
+                }
+                tmp = tmp.suivant();
+                tmp.modifierSuivant(new Maillon<T>((T) element, tmp.suivant()));
             }
+            nbElements ++;
             return true;
         }
-
-
     }
+
 
 
     @Override
@@ -82,13 +102,36 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      */
     @Override
     public T elementCourant() throws ListeVideException {
-
-        if(elements == null){
+        if(position == null){
             throw new ListeVideException();
         }
-        return (T) elements.info();
+        return (T) position.info();
     }
 
+    /**
+     * <p>Deplace la position courante sur l'element donne, si celui-ci existe
+     * dans cette liste. </p>
+     *
+     * <u>Precisions</u> :
+     * <ul>
+     * <li>Si la liste est vide, la position courante de cette liste demeure inchangee,
+     * et la methode leve une exception ListeVideException.</li>
+     *
+     * <li>Si la liste n'est pas vide, mais que l'element donne est null, la position
+     * courante demeure inchangee, et la methode leve une exception
+     * NullPointerException.</li>
+     *
+     * <li>Si la liste n'est pas vide, mais que l'element (non null) donne n'existe
+     * pas dans cette liste, la position courante demeure inchangee, et la
+     * methode leve une exception NoSuchElementException.</li>
+     * </ul>
+     *
+     * @param element l'element sur lequel deplacer la position courante.
+     * @throws ListeVideException si cette liste est vide.
+     * @throws NullPointerException si l'element donne est null.
+     * @throws NoSuchElementException si l'element donne (non null) n'existe
+     *         pas dans cette liste.
+     */
     @Override
     public void positionner(Comparable element) throws ListeVideException, NullPointerException, NoSuchElementException {
 
@@ -158,26 +201,23 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      */
     @Override
     public boolean elementExiste(Comparable element) {
-        Maillon <T> tmp = elements;
 
-        if(element == null){
-            //Traitement de l'élément si celui-ci est null
+        if(elements == null) return false;
+
+        if(elements.info().getClass() != element.getClass()){
             return false;
-        }else{
-            /*
-             * Traitement de l'élément si celui-ni est non-null
-             * Boucle qui parcours la liste de maillon pour comparer l'élément au maillon
-             * temporaire 'tmp'. Si la méthode compareTo donne 0, veux dire que les éléments
-             * comparés sont égaux.
-             */
-            while (tmp != null) {
-                if (element.compareTo(tmp) == 0) {
-                    return true;
-                }
-                tmp = tmp.suivant();
-            }
         }
-        return true; // ** ne fonctionne pas *** à corrgier
+
+        Maillon<T> tmp = elements;
+
+        while(tmp != null) {
+            if(tmp.info().compareTo(element) == 0){
+                return true;
+            }
+            tmp = tmp.suivant();
+        }
+
+        return false;
     }
 
     @Override
