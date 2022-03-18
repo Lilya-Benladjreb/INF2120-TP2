@@ -37,8 +37,7 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      */
     @Override
     public boolean ajouter(T element) throws NullPointerException {
-        boolean ajouter  = false;
-
+        boolean ajouter = true;
         Maillon <T> nouveau = new Maillon<>(element);
         T info;
 
@@ -47,25 +46,29 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
             throw new NullPointerException("L'élement ne peut être nul.");
         }
 
-        //Traitement de l'élément pour l'ajout
         Maillon<T> tmp = elements;
 
-        if(!elementExiste(element)) {
-            while (tmp.info() != null) {
-                if (tmp.info().compareTo(element) < 0) {
-                        nouveau.modifierInfo(tmp.info());
-                        nouveau.modifierSuivant(tmp.suivant());
-                        position = nouveau;
-                }
-                if (elements.info().compareTo(element) > 0) {
-                        info = nouveau.info();
-                        nouveau.modifierInfo((T) element);
-                        elements.modifierInfo((T) info);
-                }
-                tmp = tmp.suivant();
-                tmp.modifierSuivant(new Maillon<T>((T) element, tmp.suivant()));
+        //Traitement de l'élément si celui-ci existe deja dans la liste
+        if(elementExiste(element)){
+            ajouter = false;
+        }else if(!elementExiste(element)){
+            //Ajout en début de liste
+            if(tmp.suivant() == null && tmp.info().compareTo(element) > 0 ){
+                nouveau.modifierSuivant(elements);
+                elements = nouveau;
             }
-            nbElements ++;
+            //Ajout en milieu de liste
+            while(tmp.suivant() != null){
+                if (tmp.suivant() != null && tmp.info().compareTo(element) > 0){
+                    //Ajout d'un element plus petit que celui deja dans la liste
+                    nouveau.modifierSuivant(elements);
+                    elements = nouveau;
+                }else if(tmp.suivant() != null && tmp.info().compareTo(element) < 0){
+                    //Ajout d'un element plus grand que celui deja dans la liste
+                    tmp = tmp.suivant();
+                    tmp.modifierSuivant(nouveau);
+                }
+            }
             ajouter = true;
         }
 
@@ -167,6 +170,7 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
         while(fin.suivant() != null){
             fin = fin.suivant();
         }
+        position = fin;
     }
 
     @Override
@@ -298,40 +302,32 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
     }
 
     /**
-     * Redéfinition de la méthode toString pour afficher les ListeTriéeChainée.
+     * <p>
+     * Retourne une representation de cette liste sous forme d'une chaine de
+     * caracteres, selon le format montre ci-dessous.
+     * </p>
+     * <pre>
+     * Format de la chaine retournee :
      *
-     * Devrait avoir l'allure suivante:
-     * [[4, 5, 7, 10, 11, 23]
+     *    "[]"                                   (si cette liste est vide)
+     *    "[E1, E2, ..., En] (element courant)"  (si cette liste n'est pas vide)
      *
-     * @return listeTriéeChainée du bon format.
+     * Exemple : Soit cette liste = [2, 3, 7, 9, 12, 25, 36, 42] dont l'element
+     *           courant est 9. L'appel de toString sur cette liste retournera
+     *           la chaine "[2, 3, 7, 9, 12, 25, 36, 42] (9)"
+     * </pre>
+     * @return une representation de cette liste sous forme d'une chaine de
+     *         caracteres.
      */
     @Override
-    public String toString() throws NullPointerException{
-        String s = "[";
-        Maillon<T> tmp;
+    public String toString () {
+        String s;
 
-        if(elements == null){
-            throw new NullPointerException("Le premier élément de la liste est nul.");
-        }
-
-        for (int i = 0 ; i <= nbElements ; i++) {
-            s = "[" + elements.info();
-            if (elements.suivant() == null) {
-                s = s + "]";
-
-            } else {
-                s = s + ", ";
-                tmp = position.suivant();
-                while (tmp != null) {
-                    s = s + tmp.info();
-                    if (tmp.suivant() != null) {
-                        s = s + ", ";
-                    }
-                    tmp = tmp.suivant();
-                }
-
-                s = s + "]";
-            }
+        if (nbElements == 0) {
+            s = "[]";
+        } else {
+            s = elements.toString();
+            s = s + " (" + position.info() + ")";
         }
         return s;
     }
