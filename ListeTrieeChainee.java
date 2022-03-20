@@ -39,6 +39,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
     public boolean ajouter(T element) throws NullPointerException {
         boolean ajouter = false;
         Maillon<T> nouveau = new Maillon<>(element);
+        T infoTmp;
 
         //Traitement de l'élément si celui-ci est null
         if (element == null) {
@@ -58,14 +59,15 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
             ajouter = true;
         } else {
             //Ajout en milieu de liste
-            Maillon<T> precedent = elements;
-            Maillon<T> suivant = elements.suivant();
-            while (suivant != null) {
-                if (suivant.info().compareTo(element) > 0) break; //trouve où l'élément passé en paramètre < suivant.
+            Maillon<T> suivant = tmp.suivant();
+            while (suivant != null && suivant.info().compareTo(element) < 0) {
+                //trouve où l'élément passé en paramètre > suivant.
                 suivant = suivant.suivant();
             }
 
-            precedent.modifierSuivant(nouveau);
+            //Inserer nouveau apres tmp
+            nouveau.modifierSuivant(tmp.suivant());
+            tmp.modifierSuivant(nouveau);
 
             if (suivant != null) {
                 nouveau.modifierSuivant(suivant);
@@ -188,9 +190,46 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         position = fin;
     }
 
+    /**
+     * <p>Deplace la position courante sur l'element qui precede l'element courant
+     * dans cette liste. </p>
+     *
+     * <u>Precisions</u> :
+     * <ul>
+     * <li>Si cette liste est vide, aucune modification n'est effectuee, et la methode
+     * leve une exception ListeVideException.</li>
+     *
+     * <li>S'il n'y a pas de precedent parce que l'element courant est l'element
+     * en debut de liste (avant l'appel de cette methode), la position
+     * courante demeure inchangee, et la methode retourne false pour signaler
+     * qu'on est au debut de la liste.</li>
+     *
+     * <li>S'il y a un precedent, la methode retourne true pour signaler que
+     * l'operation a bien ete effectuee.</li>
+     * </ul>
+     *
+     * @return true si l'operation a ete effectuee, false sinon.
+     * @throws ListeVideException si cette liste est vide.
+     */
     @Override
     public boolean precedent() throws ListeVideException {
-        return false;
+        boolean precedentEffectuee = false;
+        Maillon<T> precedent;
+        Maillon<T> suivant;
+        T infoPrecedent;
+
+        if(estVide()){
+            throw new ListeVideException();
+        }else if(position.equals(elements)){ // si l'élément courant est le 1er element de la liste
+            precedentEffectuee = false;
+        }else{ //Si l'élément n'est pas en début de liste
+
+            //position = precedent.suivant();
+            suivant = position.suivant();
+
+            precedentEffectuee = true;
+        }
+        return precedentEffectuee;
     }
 
     /**
@@ -229,9 +268,45 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         return suivant;
     }
 
+    /**
+     * <p>Supprime l'element courant de cette liste, et retourne l'element supprime.
+     * </p>
+     *
+     * <u>Precisions</u> :
+     * <ul>
+     * <li>Si cette liste est vide avant la suppression, celle-ci n'est pas modifiee
+     * et la methode leve une exception ListeVideException.</li>
+     * <li>Si la suppression est effectuee, et que cette liste n'est pas vide apres
+     * la suppression :
+     *       <ul>
+     *       <li>Si l'element supprime etait le premier element de cette liste, la
+     *       position courante est placee sur le (nouveau) premier element de cette liste.</li>
+     *
+     *       <li>Sinon, la position courante est placee sur l'element qui precedait
+     *       l'element supprime dans cette liste.</li>
+     *       </ul>
+     * </li>
+     *
+     * </ul>
+     * @return l'element supprime de cette liste.
+     * @throws ListeVideException si cette liste est vide avant l'appel.
+     */
     @Override
     public T supprimer() throws ListeVideException {
-        return null;
+        T elementSupprime;
+        if(estVide()){
+            throw new ListeVideException();
+        }else if(elements.suivant() == null){
+                //Supprimer au début de la liste
+                elementSupprime = (T) elements;
+                elements = elements.suivant();
+                position = elements;
+        }else{
+            elementSupprime = position;
+        }
+
+
+        return elementSupprime;
     }
 
     @Override
