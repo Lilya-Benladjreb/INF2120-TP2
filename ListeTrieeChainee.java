@@ -1,12 +1,12 @@
 import java.util.NoSuchElementException;
 
-public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>{
+public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
 
-    private Maillon <T> elements;
+    private Maillon<T> elements;
     private int nbElements;
-    private Maillon <T> position;
+    private Maillon<T> position;
 
-    public ListeTrieeChainee(){
+    public ListeTrieeChainee() {
         this.elements = null;
         this.nbElements = 0;
         this.position = null;
@@ -37,48 +37,50 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      */
     @Override
     public boolean ajouter(T element) throws NullPointerException {
-        boolean ajouter = true;
-        Maillon <T> nouveau = new Maillon<>(element);
-        T info;
+        boolean ajouter = false;
+        Maillon<T> nouveau = new Maillon<>(element);
 
         //Traitement de l'élément si celui-ci est null
-        if(element == null){
+        if (element == null) {
             throw new NullPointerException("L'élement ne peut être nul.");
         }
 
         Maillon<T> tmp = elements;
 
         //Traitement de l'élément si celui-ci existe deja dans la liste
-        if(elementExiste(element)){
+        if (elementExiste(element)) {
             ajouter = false;
-        }else if(!elementExiste(element)){
-            //Ajout en début de liste
-            if(tmp.suivant() == null && tmp.info().compareTo(element) > 0 ){
-                nouveau.modifierSuivant(elements);
-                elements = nouveau;
-            }
+        } else if (tmp == null) {
+            //Ajout en début de liste (liste vide)
+            elements = nouveau;
+            position = nouveau;
+            nbElements++;
+            ajouter = true;
+        } else {
             //Ajout en milieu de liste
-            while(tmp.suivant() != null){
-                if (tmp.suivant() != null && tmp.info().compareTo(element) > 0){
-                    //Ajout d'un element plus petit que celui deja dans la liste
-                    nouveau.modifierSuivant(elements);
-                    elements = nouveau;
-                }else if(tmp.suivant() != null && tmp.info().compareTo(element) < 0){
-                    //Ajout d'un element plus grand que celui deja dans la liste
-                    tmp = tmp.suivant();
-                    tmp.modifierSuivant(nouveau);
-                }
+            Maillon<T> precedent = elements;
+            Maillon<T> suivant = elements.suivant();
+            while (suivant != null) {
+                if (suivant.info().compareTo(element) > 0) break; //trouve où l'élément passé en paramètre < suivant.
+                suivant = suivant.suivant();
             }
+
+            precedent.modifierSuivant(nouveau);
+
+            if (suivant != null) {
+                nouveau.modifierSuivant(suivant);
+            }
+
+            position = nouveau;
+            nbElements++;
             ajouter = true;
         }
-
         return ajouter;
     }
 
 
-
     @Override
-    public int ajouter(IListeTriee autreListe) throws NullPointerException{
+    public int ajouter(IListeTriee autreListe) throws NullPointerException {
         return 0;
     }
 
@@ -99,7 +101,7 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      */
     @Override
     public T elementCourant() throws ListeVideException {
-        if(position == null){
+        if (position == null || estVide()) {
             throw new ListeVideException();
         }
         return position.info();
@@ -124,15 +126,27 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      * </ul>
      *
      * @param element l'element sur lequel deplacer la position courante.
-     * @throws ListeVideException si cette liste est vide.
-     * @throws NullPointerException si l'element donne est null.
+     * @throws ListeVideException     si cette liste est vide.
+     * @throws NullPointerException   si l'element donne est null.
      * @throws NoSuchElementException si l'element donne (non null) n'existe
-     *         pas dans cette liste.
+     *                                pas dans cette liste.
      */
     @Override
     public void positionner(T element) throws ListeVideException, NullPointerException, NoSuchElementException {
+       Maillon<T> elementDonne = new Maillon<>(element);
+
+        if (estVide()){
+            throw new ListeVideException();
+        }else if (element == null){
+            throw new NullPointerException("L'élément donné ne peut être nul.");
+        }else if(!elementExiste(element)){
+            throw new NoSuchElementException("L'élément donné n'existe pas.");
+        }else{
+          position = elementDonne;
+        }
 
     }
+
 
     /**
      * <p>Deplace la position courante sur l'element se trouvant au debut de cette
@@ -142,11 +156,12 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      * @throws ListeVideException si cette liste est vide.
      */
     @Override
-    public void debut() throws ListeVideException{
-        if(estVide()){
+    public void debut() throws ListeVideException {
+        if (estVide()) {
             throw new ListeVideException();
-        }else{
-            position = elements;; //Assigner la position au debut
+        } else {
+            position = elements;
+            ; //Assigner la position au debut
         }
 
     }
@@ -159,15 +174,15 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      * @throws ListeVideException si cette liste est vide.
      */
     @Override
-    public void fin() throws ListeVideException{
+    public void fin() throws ListeVideException {
         Maillon<T> fin;
-        if(estVide()){
+        if (estVide()) {
             throw new ListeVideException();
         }
 
         //positionner le maillon fin sur le dernier maillon de la chaine
         fin = elements;
-        while(fin.suivant() != null){
+        while (fin.suivant() != null) {
             fin = fin.suivant();
         }
         position = fin;
@@ -195,18 +210,19 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      * <li>S'il y a un suivant, la methode retourne true pour signaler que l'operation
      * a bien ete effectuee.</li>
      * </ul>
+     *
      * @return true si l'operation a ete effectuee, false sinon.
      * @throws ListeVideException si cette liste est vide.
      */
     @Override
-    public boolean suivant() throws ListeVideException{
+    public boolean suivant() throws ListeVideException {
         boolean suivant;
 
-        if(estVide()){
+        if (estVide()) {
             throw new ListeVideException();
-        }else if(position.suivant() == null){
+        } else if (position.suivant() == null) {
             suivant = false;
-        }else{
+        } else {
             position = position.suivant();
             suivant = true;
         }
@@ -230,24 +246,25 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
 
     /**
      * <p>Retourne true si element est present dans cette liste, false sinon. </p>
+     *
      * @param element l'element dont on veut tester l'existence.
      * @return true si element est present dans cette liste, false sinon.
      */
     @Override
     public boolean elementExiste(T element) {
-        boolean elementExiste = true;
+        boolean elementExiste = false;
 
-        if(elements == null) {
+        if (elements == null) {
             elementExiste = false;
-        } else if(elements.info().getClass() != element.getClass()){
+        } else if (elements.info().getClass() != element.getClass()) {
             elementExiste = false;
         }
 
         Maillon<T> tmp = elements;
 
-        while(tmp != null) {
-            if(tmp.info().compareTo(element) == 0){
-                elementExiste =  true;
+        while (tmp != null) {
+            if (tmp.info().compareTo(element) == 0) {
+                elementExiste = true;
             }
             tmp = tmp.suivant();
         }
@@ -262,15 +279,16 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
 
     /**
      * <p>Retourne true si cette liste est vide, false sinon.</p>
+     *
      * @return true si cette liste est vide, false sinon.
      */
     @Override
     public boolean estVide() {
         boolean estVide;
-        if ( nbElements == 0){
+        if (nbElements == 0) {
             estVide = true;
-        }else {
-            estVide =  false;
+        } else {
+            estVide = false;
         }
         return estVide;
     }
@@ -292,9 +310,9 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      */
     @Override
     public void vider() {
-        while (nbElements != 0){
-            Maillon <T> p = elements;
-            for (int i = 1; i < nbElements; i ++){
+        while (nbElements != 0) {
+            Maillon<T> p = elements;
+            for (int i = 1; i < nbElements; i++) {
                 p.modifierSuivant(p.suivant());
             }
         }
@@ -316,11 +334,12 @@ public class ListeTrieeChainee <T extends Comparable> implements IListeTriee <T>
      *           courant est 9. L'appel de toString sur cette liste retournera
      *           la chaine "[2, 3, 7, 9, 12, 25, 36, 42] (9)"
      * </pre>
+     *
      * @return une representation de cette liste sous forme d'une chaine de
-     *         caracteres.
+     * caracteres.
      */
     @Override
-    public String toString () {
+    public String toString() {
         String s;
 
         if (nbElements == 0) {
