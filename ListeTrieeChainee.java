@@ -38,15 +38,16 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
     @Override
     public boolean ajouter(T element) throws NullPointerException {
         boolean ajouter = false;
+
         Maillon<T> nouveau = new Maillon<>(element);
+        Maillon<T> precedent = null;
+        Maillon<T> tmp = elements;
         T infoTmp;
 
         //Traitement de l'élément si celui-ci est null
         if (element == null) {
             throw new NullPointerException("L'élement ne peut être nul.");
         }
-
-        Maillon<T> tmp = elements;
 
         //Traitement de l'élément si celui-ci existe deja dans la liste
         if (elementExiste(element)) {
@@ -57,26 +58,25 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
             position = nouveau;
             nbElements++;
             ajouter = true;
-        } else {
-            //Ajout en milieu de liste
-            Maillon<T> suivant = tmp.suivant();
-            while (suivant != null && suivant.info().compareTo(element) < 0) {
-                //trouve où l'élément passé en paramètre > suivant.
-                suivant = suivant.suivant();
-            }
-
-            //Inserer nouveau apres tmp
-            nouveau.modifierSuivant(tmp.suivant());
-            tmp.modifierSuivant(nouveau);
-
-            if (suivant != null) {
-                nouveau.modifierSuivant(suivant);
-            }
-
-            position = nouveau;
-            nbElements++;
-            ajouter = true;
         }
+
+        //positionner precedent juste avant
+        while (tmp != null && tmp.info().compareTo(element) < 0) {
+            precedent = tmp;
+            tmp = tmp.suivant();
+        }
+
+        //Inserer nouveau apres tmp
+        nouveau.modifierSuivant(tmp);
+
+        if(precedent != null){
+            precedent.modifierSuivant(nouveau);
+            nbElements++;
+        }
+
+        position = nouveau;
+        ajouter = true;
+
         return ajouter;
     }
 
@@ -135,16 +135,16 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     @Override
     public void positionner(T element) throws ListeVideException, NullPointerException, NoSuchElementException {
-       Maillon<T> elementDonne = new Maillon<>(element);
+        Maillon<T> elementDonne = new Maillon<>(element);
 
-        if (estVide()){
+        if (estVide()) {
             throw new ListeVideException();
         }else if (element == null){
             throw new NullPointerException("L'élément donné ne peut être nul.");
-        }else if(!elementExiste(element)){
+        }else if (!elementExiste(element)){
             throw new NoSuchElementException("L'élément donné n'existe pas.");
         }else{
-          position = elementDonne;
+            position = elementDonne;
         }
 
     }
@@ -214,19 +214,19 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
     @Override
     public boolean precedent() throws ListeVideException {
         boolean precedentEffectuee = false;
-        Maillon<T> precedent;
-        Maillon<T> suivant;
-        T infoPrecedent;
+        Maillon<T> precedent = null;
+        Maillon<T> position = elements;
 
-        if(estVide()){
+        if (estVide()) {
             throw new ListeVideException();
-        }else if(position.equals(elements)){ // si l'élément courant est le 1er element de la liste
+        } else if (position.equals(elements)) { // si l'élément courant est le 1er element de la liste
             precedentEffectuee = false;
-        }else{ //Si l'élément n'est pas en début de liste
-
-            //position = precedent.suivant();
-            suivant = position.suivant();
-
+        } else { //Si l'élément n'est pas en début de liste
+            while(position != null && position.info().compareTo(elements) < 0){
+                precedent = position;
+                position = position.suivant();
+            }
+            precedent.modifierSuivant(position);
             precedentEffectuee = true;
         }
         return precedentEffectuee;
@@ -288,30 +288,110 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * </li>
      *
      * </ul>
+     *
      * @return l'element supprime de cette liste.
      * @throws ListeVideException si cette liste est vide avant l'appel.
      */
     @Override
     public T supprimer() throws ListeVideException {
         T elementSupprime;
-        if(estVide()){
+        if (estVide()) {
             throw new ListeVideException();
-        }else if(elements.suivant() == null){
-                //Supprimer au début de la liste
-                elementSupprime = (T) elements;
-                elements = elements.suivant();
-                position = elements;
-        }else{
-            elementSupprime = position;
+        } else if (elements.suivant() == null) {
+            //Supprimer au début de la liste
+            elementSupprime = (T) elements;
+            elements = elements.suivant();
+            position = elements;
+            nbElements--;
+        } else {
+            Maillon<T> p = elements;
+
+            elementSupprime = p.suivant().info();
+            p.modifierSuivant(p.suivant().suivant());
+            --nbElements;
+
         }
 
 
         return elementSupprime;
     }
 
+    /**
+     * <p>Supprime l'element donne de cette liste. </p>
+     *
+     * <u>Precisions</u> :
+     * <ul>
+     * <li>Si cette liste est vide avant la suppression, celle-ce n'est pas modifiee
+     * et la methode leve une exception ListeVideException.</li>
+     *
+     * <li>Si cette liste n'est pas vide, et que l'element donne est null, la methode
+     * leve une exception NullPointerException.</li>
+     *
+     * <li>Si element (non null) n'est pas dans cette liste, la suppression n'est
+     * pas effectuee, la position courante n'est pas modifiee, et la methode
+     * retourne false pour signaler que l'operation n'a pas ete effectuee.</li>
+     *
+     * <li>Si la suppression est effectuee et que cette liste n'est pas vide apres la
+     * suppression :
+     *
+     *       <ul><li>Si l'element supprime etait le premier element de cette liste, la
+     *       position courante est placee sur le (nouveau) premier element de cette
+     *       liste.</li>
+     *
+     *       <li>Sinon, la position courante est placee sur l'element qui precedait
+     *       l'element supprime dans cette liste.</li>
+     *       </ul></li>
+     * </ul>
+     *
+     * <pre>
+     * Exemple 1 : Soit cette liste = [1, 3, 6, 7, 11, 23, 42, 100]
+     *             Apres l'appel de supprimer(7)
+     *             cette liste = [1, 3, 6, 11, 23, 42, 100] et element courant = 6.
+     *
+     * Exemple 2 : Soit cette liste = [1, 3, 6, 7, 11, 23, 42, 100]
+     *             Apres l'appel de supprimer(100)
+     *             cette liste = [1, 3, 6, 11, 23, 42] et element courant = 42.
+     *
+     * Exemple 3 : Soit cette liste = [1, 3, 6, 11, 23, 42]
+     *             Apres l'appel de supprimer(1)
+     *             cette liste = [3, 6, 11, 23, 42] et element courant = 3.
+     *
+     * Exemple 4 : Soit cette liste = [1]
+     *             Apres l'appel de supprimer(1)
+     *             cette liste = [] (liste vide) et aucun element courant.
+     * </pre>
+     * @param element l'element a supprimer.
+     * @return true si l'element a ete supprime, false sinon.
+     * @throws ListeVideException si cette liste est vide avant l'appel.
+     * @throws NullPointerException si element est null.
+     */
     @Override
     public boolean supprimer(T element) throws ListeVideException, NullPointerException {
-        return false;
+        boolean elementSupprime = false;
+        Maillon<T> precedent = elements;
+
+        if (estVide()){
+            throw new ListeVideException();
+        }else if(element == null){
+            throw new NullPointerException("L'élément ne peut pas être nul");
+        }else if(!elementExiste(element)){
+            elementSupprime = false;
+        }
+
+        //Supprimer en début de liste
+        if(element.compareTo(elements) == 0){
+            elements = elements.suivant();
+            position = elements;
+        }
+
+        while(!precedent.suivant().info().equals(element)){
+            precedent = precedent.suivant();
+            position = precedent;
+        }
+
+        precedent.modifierSuivant(precedent.suivant().suivant());
+
+        return elementSupprime;
     }
 
     @Override
