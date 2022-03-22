@@ -40,8 +40,6 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         boolean ajouter = false;
 
         Maillon<T> nouveau = new Maillon<>(element);
-        Maillon<T> precedent = null;
-        Maillon<T> tmp = elements;
         T infoTmp;
 
         //Traitement de l'élément si celui-ci est null
@@ -49,33 +47,48 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
             throw new NullPointerException("L'élement ne peut être nul.");
         }
 
-        //Traitement de l'élément si celui-ci existe deja dans la liste
-        if (elementExiste(element)) {
-            ajouter = false;
-        } else if (tmp == null) {
-            //Ajout en début de liste (liste vide)
-            elements = nouveau;
+        //Ajout de l'element dans la liste
+        if (!elementExiste(element)) {
+            nbElements++;
             position = nouveau;
-            nbElements++;
             ajouter = true;
+
+            if (elements == null) {
+                //Ajout en début de liste (liste vide)
+                elements = nouveau;
+            } else {
+                //Ajout dans une liste non-vide
+                Maillon<T> precedent = null;
+                Maillon<T> suivant = elements;
+
+                boolean positionTrouvee = false;
+                while (suivant != null && !positionTrouvee) {
+                    //Trouver avant qui mettre le nouvel élément
+                    if (suivant.info().compareTo(element) > 0) {
+                        positionTrouvee = true;
+                    }
+                    //Initier un precedent
+                    if (!positionTrouvee) {
+                        precedent = suivant;
+                        suivant = suivant.suivant();
+                    }
+
+                }
+
+                if (precedent != null) {
+                    // il y a un précédent avant l'élément, l'enregistrer comme suivant
+                    precedent.modifierSuivant(nouveau);
+                } else {
+                    // il n'y a aucun précédent, l'élément est le premier
+                    elements = nouveau;
+                }
+
+                if (suivant != null) {
+                    // l'élément n'est pas le dernier, enregistrer son suivant.
+                    nouveau.modifierSuivant(suivant);
+                }
+            }
         }
-
-        //positionner precedent juste avant
-        while (tmp != null && tmp.info().compareTo(element) < 0) {
-            precedent = tmp;
-            tmp = tmp.suivant();
-        }
-
-        //Inserer nouveau apres tmp
-        nouveau.modifierSuivant(tmp);
-
-        if(precedent != null){
-            precedent.modifierSuivant(nouveau);
-            nbElements++;
-        }
-
-        position = nouveau;
-        ajouter = true;
 
         return ajouter;
     }
@@ -139,11 +152,11 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
 
         if (estVide()) {
             throw new ListeVideException();
-        }else if (element == null){
+        } else if (element == null) {
             throw new NullPointerException("L'élément donné ne peut être nul.");
-        }else if (!elementExiste(element)){
+        } else if (!elementExiste(element)) {
             throw new NoSuchElementException("L'élément donné n'existe pas.");
-        }else{
+        } else {
             position = elementDonne;
         }
 
@@ -222,7 +235,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         } else if (position.equals(elements)) { // si l'élément courant est le 1er element de la liste
             precedentEffectuee = false;
         } else { //Si l'élément n'est pas en début de liste
-            while(position != null && position.info().compareTo(elements) < 0){
+            while (position != null && position.info().compareTo(elements) < 0) {
                 precedent = position;
                 position = position.suivant();
             }
@@ -360,9 +373,10 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      *             Apres l'appel de supprimer(1)
      *             cette liste = [] (liste vide) et aucun element courant.
      * </pre>
+     *
      * @param element l'element a supprimer.
      * @return true si l'element a ete supprime, false sinon.
-     * @throws ListeVideException si cette liste est vide avant l'appel.
+     * @throws ListeVideException   si cette liste est vide avant l'appel.
      * @throws NullPointerException si element est null.
      */
     @Override
@@ -370,21 +384,21 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         boolean elementSupprime = false;
         Maillon<T> precedent = elements;
 
-        if (estVide()){
+        if (estVide()) {
             throw new ListeVideException();
-        }else if(element == null){
+        } else if (element == null) {
             throw new NullPointerException("L'élément ne peut pas être nul");
-        }else if(!elementExiste(element)){
+        } else if (!elementExiste(element)) {
             elementSupprime = false;
         }
 
         //Supprimer en début de liste
-        if(element.compareTo(elements) == 0){
+        if (element.compareTo(elements) == 0) {
             elements = elements.suivant();
             position = elements;
         }
 
-        while(!precedent.suivant().info().equals(element)){
+        while (!precedent.suivant().info().equals(element)) {
             precedent = precedent.suivant();
             position = precedent;
         }
