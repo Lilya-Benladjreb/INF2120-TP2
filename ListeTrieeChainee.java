@@ -215,6 +215,8 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
     }
 
 
+    //nouvelle note
+
     /**
      * <p>Deplace la position courante sur l'element se trouvant au debut de cette
      * liste (le premier element devient l'element courant), si cette liste n'est
