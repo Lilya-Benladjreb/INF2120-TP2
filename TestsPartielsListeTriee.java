@@ -71,7 +71,7 @@ public class TestsPartielsListeTriee {
       System.out.println (l1);                          //[0, 3, 4, 6, 7, 10, 11, 18] (0)
 
       l1.positionner (10);
-      System.out.println (l1.elementCourant ());        //0
+      System.out.println (l1.elementCourant ());        //10
 
       l1.positionner (18);
       System.out.println (l1.elementCourant ());        //18
