@@ -38,7 +38,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public boolean ajouter(T element) throws NullPointerException {
+    public boolean ajouter(T element){
         boolean ajouter = false;
 
         Maillon<T> nouveau = new Maillon<>(element);
@@ -127,8 +127,9 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @return le nombre d'elements ajoutes dans cette liste (0 si aucun).
      * @throws NullPointerException si autreListe est null.
      */
+    //Methode Fonctionnelle
     @Override
-    public int ajouter(IListeTriee<T> autreListe) throws NullPointerException {
+    public int ajouter(IListeTriee<T> autreListe) {
         int nbElementsAjoutes = 0;
 
         if (autreListe == null) {
@@ -166,7 +167,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public T elementCourant() throws ListeVideException {
+    public T elementCourant(){
         if (position == null || estVide()) {
             throw new ListeVideException();
         }
@@ -199,7 +200,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public void positionner(T element) throws ListeVideException, NullPointerException, NoSuchElementException {
+    public void positionner(T element){
         Maillon<T> elementDonne = new Maillon<>(element);
 
         if (estVide()) {
@@ -226,7 +227,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public void debut() throws ListeVideException {
+    public void debut(){
         if (estVide()) {
             throw new ListeVideException();
         } else {
@@ -245,7 +246,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public void fin() throws ListeVideException {
+    public void fin(){
         Maillon<T> fin;
         if (estVide()) {
             throw new ListeVideException();
@@ -280,23 +281,25 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @return true si l'operation a ete effectuee, false sinon.
      * @throws ListeVideException si cette liste est vide.
      */
-    //Methode (Should) Fonctionnelle
+    //Methode Fonctionnelle
     @Override
-    public boolean precedent() throws ListeVideException {
+    public boolean precedent(){
         boolean precedentEffectuee = false;
-        Maillon<T> precedent = null;
-        Maillon<T> position = elements;
+        Maillon<T> tmp = elements;
 
         if (estVide()) {
             throw new ListeVideException();
-        } else if (position.equals(elements)) { // si l'élément courant est le 1er element de la liste
+        } else if (position.info().compareTo(tmp.info()) == 0) {
+            // si l'élément courant est le 1er element de la liste
             precedentEffectuee = false;
         } else { //Si l'élément n'est pas en début de liste
-            while (position != null && position.info().compareTo(elements) < 0) {
-                precedent = position;
-                position = position.suivant();
+            //Trouver l'élément de la liste qui est plus petit que ma position actuelle
+            while (tmp.suivant() != null){
+                if(position.info().compareTo(tmp.suivant().info()) == 0) {
+                    position = tmp;
+                }
+                tmp = tmp.suivant();
             }
-            precedent.modifierSuivant(position);
             precedentEffectuee = true;
         }
         return precedentEffectuee;
@@ -323,8 +326,9 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @return true si l'operation a ete effectuee, false sinon.
      * @throws ListeVideException si cette liste est vide.
      */
+    //Methode Fonctionnelle
     @Override
-    public boolean suivant() throws ListeVideException {
+    public boolean suivant(){
         boolean suivant;
 
         if (estVide()) {
@@ -362,8 +366,9 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @return l'element supprime de cette liste.
      * @throws ListeVideException si cette liste est vide avant l'appel.
      */
+    //Methode (Should) Fonctionnelle
     @Override
-    public T supprimer() throws ListeVideException {
+    public T supprimer(){
         T elementSupprime;
         if (estVide()) {
             throw new ListeVideException();
@@ -435,8 +440,9 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @throws ListeVideException   si cette liste est vide avant l'appel.
      * @throws NullPointerException si element est null.
      */
+    //Methode (Should) Fonctionnelle
     @Override
-    public boolean supprimer(T element) throws ListeVideException, NullPointerException {
+    public boolean supprimer(T element){
         boolean elementSupprime = false;
         Maillon<T> precedent = elements;
 
@@ -493,16 +499,17 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * aucun element n'a ete supprime, la liste retournee est vide.
      * @throws NullPointerException si autreListe est null.
      */
+    //Methode (Should) Fonctionnelle
     @Override
-    public IListeTriee supprimer(IListeTriee autreListe) throws NullPointerException {
-        IListeTriee<T> elementsSupprimes = null;
+    public IListeTriee supprimer(IListeTriee<T> autreListe){
+        IListeTriee<T> elementsSupprimes = new ListeTrieeChainee<>();
 
         if(autreListe == null){
             throw new NullPointerException("La liste à supprimer ne peut être nulle, merci!");
         }else{
             //Positionner le 1er élément de l'autre listre pour la suppression.
             autreListe.debut();
-            elementsSupprimes = this.supprimer((IListeTriee) autreListe.elementCourant());
+            elementsSupprimes = this.supprimer((IListeTriee<T>) autreListe.elementCourant());
             //Continuer le même processus pour les autres éléments.
             while (autreListe.suivant()) {
                 elementsSupprimes = this.supprimer((IListeTriee<T>) autreListe.elementCourant());
@@ -610,12 +617,46 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * elementDebut a elementFin (inclusivement).
      * @throws ListeVideException     si cette liste est vide.
      * @throws NullPointerException   si elementDebut ou elementFin est null.
-     * @throws NoSuchElementException si elementDebut est plus grand que elementFin.
+     * @throws NoSuchElementException si elementDebut est plus grand qu'elementFin.
      */
     @Override
-    public IListeTriee sousListe(T elementDebut, T elementFin) throws
-            ListeVideException, NullPointerException, NoSuchElementException {
-        return null;
+    public IListeTriee<T> sousListe(T elementDebut, T elementFin){
+        IListeTriee<T> sousListeElements = new ListeTrieeChainee<>();
+        Maillon<T> tmp = elements;
+
+        if(this.estVide()){
+            throw new ListeVideException();
+        }else if (elementDebut == null || elementFin == null){
+            throw new NullPointerException("La sous-liste doit comporter un début et une fin, merci!");
+        }else if(elementDebut.compareTo(elementFin) > 0){
+            throw new NoSuchElementException("L'élément du début ne peut pas être plus grand que l'élément de la fin, merci!");
+        }else{
+            this.debut();
+            //Ajouter le premier élément de la sous-liste
+            if(elementDebut.compareTo(this.position.info()) == 0){
+                sousListeElements.ajouter(elementDebut);
+            }
+
+            while(this.suivant()){
+                //Ajouter les éléments d'une liste non-vide
+                if(elementFin.compareTo(this.position.info()) < 0){
+                    sousListeElements.ajouter((IListeTriee<T>) tmp);
+                    tmp = tmp.suivant();
+                }
+            }
+
+            //Ajouter le dernier element de la sous-liste
+            if(elementFin.compareTo(this.position.info()) == 0){
+                sousListeElements.ajouter(elementFin);
+            }
+
+            //Placer l'élément courant au début de la sous-liste
+            if(!sousListeElements.estVide()){
+                sousListeElements.debut();
+            }
+
+        }
+        return sousListeElements;
     }
 
     /**
@@ -641,24 +682,43 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @return une liste des elements communs entre cette liste et autreListe.
      * @throws NullPointerException si autreListe est null.
      */
+    //Mehode Fonctionnelle
     @Override
-    public IListeTriee elementsCommuns(IListeTriee autreListe) throws NullPointerException {
-        return null;
+    public IListeTriee<T> elementsCommuns(IListeTriee<T> autreListe) {
+        IListeTriee<T> listeElementsCommuns = new ListeTrieeChainee<>();
+
+        if(autreListe == null){
+            throw new NullPointerException("La liste d'éléments que vous aimeriez comparer ne peut être nulle.");
+        }else{
+            //Placer le pointeur au premier element de la liste
+            autreListe.debut();
+            if(this.elementExiste(autreListe.elementCourant()) && autreListe.elementCourant() != null){
+                listeElementsCommuns.ajouter(autreListe.elementCourant());
+            }
+
+            while(autreListe.suivant()){
+                if(this.elementExiste(autreListe.elementCourant())){
+                    listeElementsCommuns.ajouter(autreListe.elementCourant());
+                }
+            }
+
+            if(!listeElementsCommuns.estVide()){
+                listeElementsCommuns.debut();
+            }
+        }
+        return listeElementsCommuns;
     }
 
     /**
      * <p>Retire tous les elements de cette liste. Apres l'appel de cette
      * methode, la liste est vide.</p>
      */
+    //Methode Fonctionnelle
     @Override
     public void vider() {
-        if(nbElements != 0) {
-            Maillon<T> p = elements;
-            while (p.suivant() != null){
-                p.modifierSuivant(elements.suivant());
-            }
-        }
-
+        nbElements = 0;
+        position = null;
+        elements = null;
     }
 
     /**
