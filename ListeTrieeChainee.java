@@ -38,7 +38,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public boolean ajouter(T element){
+    public boolean ajouter(T element) {
         boolean ajouter = false;
 
         Maillon<T> nouveau = new Maillon<>(element);
@@ -167,7 +167,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public T elementCourant(){
+    public T elementCourant() {
         if (position == null || estVide()) {
             throw new ListeVideException();
         }
@@ -200,7 +200,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public void positionner(T element){
+    public void positionner(T element) {
         Maillon<T> elementDonne = new Maillon<>(element);
 
         if (estVide()) {
@@ -227,7 +227,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public void debut(){
+    public void debut() {
         if (estVide()) {
             throw new ListeVideException();
         } else {
@@ -246,7 +246,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public void fin(){
+    public void fin() {
         Maillon<T> fin;
         if (estVide()) {
             throw new ListeVideException();
@@ -283,7 +283,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public boolean precedent(){
+    public boolean precedent() {
         boolean precedentEffectuee = false;
         Maillon<T> tmp = elements;
 
@@ -294,8 +294,8 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
             precedentEffectuee = false;
         } else { //Si l'élément n'est pas en début de liste
             //Trouver l'élément de la liste qui est plus petit que ma position actuelle
-            while (tmp.suivant() != null){
-                if(position.info().compareTo(tmp.suivant().info()) == 0) {
+            while (tmp.suivant() != null) {
+                if (position.info().compareTo(tmp.suivant().info()) == 0) {
                     position = tmp;
                 }
                 tmp = tmp.suivant();
@@ -328,7 +328,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode Fonctionnelle
     @Override
-    public boolean suivant(){
+    public boolean suivant() {
         boolean suivant;
 
         if (estVide()) {
@@ -366,24 +366,44 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @return l'element supprime de cette liste.
      * @throws ListeVideException si cette liste est vide avant l'appel.
      */
-    //Methode (Should) Fonctionnelle
+    //Methode Fonctionnelle
     @Override
-    public T supprimer(){
+    public T supprimer() {
         T elementSupprime;
+        Maillon<T> tmp = elements;
+
         if (estVide()) {
             throw new ListeVideException();
-        } else if (elements.suivant() == null) {
-            //Supprimer au début de la liste
-            elementSupprime = elements.info();
-            elements = elements.suivant();
-            position = elements;
-            nbElements--;
         } else {
             //Supprimer dans une liste non-vide
-            Maillon<T> p = elements;
+            Maillon<T> p = position;
+            elementSupprime = p.info();
+            if(p.info().compareTo(elements) == 0 && p.suivant() != null){
+                //Supprimer en début de liste non-vide
+                elements = elements.suivant();
+                position = elements;
+            }else if(p.info().compareTo(elements) == 0 && p.suivant() == null){
+                elements = null;
+                position = null;
+            }
 
-            elementSupprime = p.suivant().info();
-            p.modifierSuivant(p.suivant().suivant());
+            if(p.suivant()!= null){
+                while(tmp.suivant().info().compareTo(elementSupprime) < 0){
+                    tmp = tmp.suivant();
+                }
+                tmp.modifierSuivant(p.suivant());
+                position = tmp;
+
+            }else if(p.suivant() == null){
+                //Supprimer en fin de liste
+                while(tmp.suivant().info().compareTo(elementSupprime) < 0){
+                    tmp = tmp.suivant();
+                }
+                if (tmp.suivant().info().compareTo(elementSupprime) == 0){
+                    tmp.modifierSuivant(null);
+                    position = tmp;
+                }
+            }
             --nbElements;
 
         }
@@ -442,9 +462,10 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode (Should) Fonctionnelle
     @Override
-    public boolean supprimer(T element){
+    public boolean supprimer(T element) {
         boolean elementSupprime = false;
-        Maillon<T> precedent = elements;
+        Maillon<T> tmp = elements;
+        Maillon<T> supprime = new Maillon<T>(element);
 
         if (estVide()) {
             throw new ListeVideException();
@@ -458,14 +479,20 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         if (element.compareTo(elements.info()) == 0) {
             elements = elements.suivant();
             position = elements;
+            elementSupprime = true;
+        } else {
+            //Supprimer en milieu ou fin de liste
+            while (tmp.suivant() != null) {
+                if (position.info().compareTo(tmp.suivant().info()) == 0) {
+                    position = tmp;
+                }
+                tmp = tmp.suivant();
+            }
+            if (element.compareTo(tmp.info()) == 0) {
+                position.modifierSuivant(tmp.suivant());
+            }
+            elementSupprime = true;
         }
-
-        while (!precedent.suivant().info().equals(element)) {
-            precedent = precedent.suivant();
-            position = precedent;
-        }
-
-        precedent.modifierSuivant(precedent.suivant().suivant());
 
         return elementSupprime;
     }
@@ -501,12 +528,12 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode (Should) Fonctionnelle
     @Override
-    public IListeTriee supprimer(IListeTriee<T> autreListe){
+    public IListeTriee supprimer(IListeTriee<T> autreListe) {
         IListeTriee<T> elementsSupprimes = new ListeTrieeChainee<>();
 
-        if(autreListe == null){
+        if (autreListe == null) {
             throw new NullPointerException("La liste à supprimer ne peut être nulle, merci!");
-        }else{
+        } else {
             //Positionner le 1er élément de l'autre listre pour la suppression.
             autreListe.debut();
             elementsSupprimes = this.supprimer((IListeTriee<T>) autreListe.elementCourant());
@@ -619,42 +646,34 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @throws NullPointerException   si elementDebut ou elementFin est null.
      * @throws NoSuchElementException si elementDebut est plus grand qu'elementFin.
      */
+    //Methode (NON) Fonctionnelle
     @Override
-    public IListeTriee<T> sousListe(T elementDebut, T elementFin){
+    public IListeTriee<T> sousListe(T elementDebut, T elementFin) {
         IListeTriee<T> sousListeElements = new ListeTrieeChainee<>();
-        Maillon<T> tmp = elements;
 
-        if(this.estVide()){
+        if (this.estVide()) {
             throw new ListeVideException();
-        }else if (elementDebut == null || elementFin == null){
-            throw new NullPointerException("La sous-liste doit comporter un début et une fin, merci!");
-        }else if(elementDebut.compareTo(elementFin) > 0){
-            throw new NoSuchElementException("L'élément du début ne peut pas être plus grand que l'élément de la fin, merci!");
-        }else{
+        } else if (elementDebut == null || elementFin == null) {
+            throw new NullPointerException("La sous-liste doit comporter un début et une fin.");
+        } else if (elementDebut.compareTo(elementFin) > 0) {
+            throw new NoSuchElementException("L'élément du début ne peut pas être plus grand que l'élément de la fin.");
+        } else {
             this.debut();
             //Ajouter le premier élément de la sous-liste
-            if(elementDebut.compareTo(this.position.info()) == 0){
-                sousListeElements.ajouter(elementDebut);
+            if (elementDebut.compareTo(this.elementCourant()) <= 0) {
+                sousListeElements.ajouter(this.elementCourant());
             }
 
-            while(this.suivant()){
-                //Ajouter les éléments d'une liste non-vide
-                if(elementFin.compareTo(this.position.info()) < 0){
-                    sousListeElements.ajouter((IListeTriee<T>) tmp);
-                    tmp = tmp.suivant();
+            //Ajouter les éléments de la liste qui seront avant l'elementFin
+            while (this.suivant()) {
+                if (elementDebut.compareTo(this.elementCourant()) <= 0 && elementFin.compareTo(this.elementCourant()) >= 0) {
+                    sousListeElements.ajouter(this.elementCourant());
                 }
             }
-
-            //Ajouter le dernier element de la sous-liste
-            if(elementFin.compareTo(this.position.info()) == 0){
-                sousListeElements.ajouter(elementFin);
-            }
-
-            //Placer l'élément courant au début de la sous-liste
-            if(!sousListeElements.estVide()){
-                sousListeElements.debut();
-            }
-
+        }
+        //Placer l'élément courant (position) au début de la sous-liste
+        if (!sousListeElements.estVide()) {
+            sousListeElements.debut();
         }
         return sousListeElements;
     }
@@ -687,22 +706,22 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
     public IListeTriee<T> elementsCommuns(IListeTriee<T> autreListe) {
         IListeTriee<T> listeElementsCommuns = new ListeTrieeChainee<>();
 
-        if(autreListe == null){
+        if (autreListe == null) {
             throw new NullPointerException("La liste d'éléments que vous aimeriez comparer ne peut être nulle.");
-        }else{
+        } else {
             //Placer le pointeur au premier element de la liste
             autreListe.debut();
-            if(this.elementExiste(autreListe.elementCourant()) && autreListe.elementCourant() != null){
+            if (this.elementExiste(autreListe.elementCourant()) && autreListe.elementCourant() != null) {
                 listeElementsCommuns.ajouter(autreListe.elementCourant());
             }
 
-            while(autreListe.suivant()){
-                if(this.elementExiste(autreListe.elementCourant())){
+            while (autreListe.suivant()) {
+                if (this.elementExiste(autreListe.elementCourant())) {
                     listeElementsCommuns.ajouter(autreListe.elementCourant());
                 }
             }
 
-            if(!listeElementsCommuns.estVide()){
+            if (!listeElementsCommuns.estVide()) {
                 listeElementsCommuns.debut();
             }
         }
@@ -753,4 +772,5 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         return s;
     }
 }
+
 
