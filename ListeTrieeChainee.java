@@ -1,4 +1,15 @@
-import java.util.ArrayList;
+/**
+ * Cette classe implémente l'interface ListreTriee. Elle représente une liste triée chainée sans doublons.
+ * Plusieurs méthodes publiques sont disponibles pour travailler avec la liste.
+ *
+ * @author Lilya Benladjreb
+ * Code permanent : BENL28549807
+ * Courriel : benladjreb.lilya@courrier.uqam.ca
+ * Cours : INF1120-30
+ * @version 2022-03-26
+ */
+
+
 import java.util.NoSuchElementException;
 
 public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
