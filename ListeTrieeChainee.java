@@ -215,9 +215,6 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
 
     }
 
-
-    //nouvelle note
-
     /**
      * <p>Deplace la position courante sur l'element se trouvant au debut de cette
      * liste (le premier element devient l'element courant), si cette liste n'est
@@ -248,6 +245,7 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
     @Override
     public void fin() {
         Maillon<T> fin;
+
         if (estVide()) {
             throw new ListeVideException();
         }
@@ -292,7 +290,8 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         } else if (position.info().compareTo(tmp.info()) == 0) {
             // si l'élément courant est le 1er element de la liste
             precedentEffectuee = false;
-        } else { //Si l'élément n'est pas en début de liste
+        } else {
+            //Si l'élément n'est pas en début de liste
             //Trouver l'élément de la liste qui est plus petit que ma position actuelle
             while (tmp.suivant() != null) {
                 if (position.info().compareTo(tmp.suivant().info()) == 0) {
@@ -334,8 +333,10 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
         if (estVide()) {
             throw new ListeVideException();
         } else if (position.suivant() == null) {
+            //Si la position est le dernier de la liste
             suivant = false;
         } else {
+            //Si la position n'est pas le dernier de la liste
             position = position.suivant();
             suivant = true;
         }
@@ -369,45 +370,31 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
     //Methode Fonctionnelle
     @Override
     public T supprimer() {
-        T elementSupprime;
-        Maillon<T> tmp = elements;
-
         if (estVide()) {
             throw new ListeVideException();
-        } else {
-            //Supprimer dans une liste non-vide
-            Maillon<T> p = position;
-            elementSupprime = p.info();
-            if(p.info().compareTo(elements) == 0 && p.suivant() != null){
-                //Supprimer en début de liste non-vide
-                elements = elements.suivant();
-                position = elements;
-            }else if(p.info().compareTo(elements) == 0 && p.suivant() == null){
-                elements = null;
-                position = null;
-            }
-
-            if(p.suivant()!= null){
-                while(tmp.suivant().info().compareTo(elementSupprime) < 0){
-                    tmp = tmp.suivant();
-                }
-                tmp.modifierSuivant(p.suivant());
-                position = tmp;
-
-            }else if(p.suivant() == null){
-                //Supprimer en fin de liste
-                while(tmp.suivant().info().compareTo(elementSupprime) < 0){
-                    tmp = tmp.suivant();
-                }
-                if (tmp.suivant().info().compareTo(elementSupprime) == 0){
-                    tmp.modifierSuivant(null);
-                    position = tmp;
-                }
-            }
-            --nbElements;
-
         }
-        return elementSupprime;
+
+        Maillon<T> avant = null;
+        Maillon<T> toDelete = elements;
+        //Placer l'élément à supprimé sur l'élément courant
+        while (toDelete.info().compareTo(elementCourant()) != 0) {
+            avant = toDelete;
+            toDelete = toDelete.suivant();
+        }
+
+        if (avant == null) {
+            //Si l'élément à supprimer était premier de la liste
+            elements = elements.suivant();
+            position = elements;
+        } else {
+            //Si l'élément est au milieu de la liste
+            avant.modifierSuivant(toDelete.suivant());
+            position = avant;
+        }
+
+        --nbElements;
+
+        return toDelete.info();
     }
 
     /**
@@ -460,38 +447,35 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      * @throws ListeVideException   si cette liste est vide avant l'appel.
      * @throws NullPointerException si element est null.
      */
-    //Methode (Should) Fonctionnelle
+    //Methode Fonctionnelle
     @Override
     public boolean supprimer(T element) {
         boolean elementSupprime = false;
-        Maillon<T> tmp = elements;
-        Maillon<T> supprime = new Maillon<T>(element);
+        Maillon<T> toDelete = elements;
+        Maillon<T> avant = null;
 
         if (estVide()) {
             throw new ListeVideException();
         } else if (element == null) {
             throw new NullPointerException("L'élément ne peut pas être nul, merci!");
-        } else if (!elementExiste(element)) {
-            elementSupprime = false;
-        }
+        } else if (elementExiste(element)) {
+            elementSupprime = true;
+            //Se placer sur l'élément à supprimer qui concorde à celui passé en paramètre
+            while (toDelete.info().compareTo(element) != 0) {
+                avant = toDelete;
+                toDelete = toDelete.suivant();
+            }
 
-        //Supprimer en début de liste
-        if (element.compareTo(elements.info()) == 0) {
-            elements = elements.suivant();
-            position = elements;
-            elementSupprime = true;
-        } else {
-            //Supprimer en milieu ou fin de liste
-            while (tmp.suivant() != null) {
-                if (position.info().compareTo(tmp.suivant().info()) == 0) {
-                    position = tmp;
-                }
-                tmp = tmp.suivant();
+            if (avant == null) {
+                //Si l'élément à supprimer était premier de la liste
+                elements = elements.suivant();
+                position = elements;
+            } else {
+                //supprimer l'élément trouvé
+                avant.modifierSuivant(toDelete.suivant());
+                position = avant;
             }
-            if (element.compareTo(tmp.info()) == 0) {
-                position.modifierSuivant(tmp.suivant());
-            }
-            elementSupprime = true;
+            --nbElements;
         }
 
         return elementSupprime;
@@ -528,22 +512,26 @@ public class ListeTrieeChainee<T extends Comparable> implements IListeTriee<T> {
      */
     //Methode (Should) Fonctionnelle
     @Override
-    public IListeTriee supprimer(IListeTriee<T> autreListe) {
+    public IListeTriee<T> supprimer(IListeTriee<T> autreListe) {
         IListeTriee<T> elementsSupprimes = new ListeTrieeChainee<>();
-
         if (autreListe == null) {
-            throw new NullPointerException("La liste à supprimer ne peut être nulle, merci!");
-        } else {
-            //Positionner le 1er élément de l'autre listre pour la suppression.
-            autreListe.debut();
-            elementsSupprimes = this.supprimer((IListeTriee<T>) autreListe.elementCourant());
-            //Continuer le même processus pour les autres éléments.
-            while (autreListe.suivant()) {
-                elementsSupprimes = this.supprimer((IListeTriee<T>) autreListe.elementCourant());
-            }
-            //Placer le maillon Position au début de la liste
-            this.debut();
+            throw new NullPointerException("La liste à supprimer ne peut être nulle.");
         }
+
+        //Positionner le 1er élément de l'autre liste pour la suppression.
+        autreListe.debut();
+        if (this.supprimer(autreListe.elementCourant())) {
+            elementsSupprimes.ajouter(autreListe.elementCourant());
+        }
+
+        while (autreListe.suivant()) {
+            if (this.supprimer(autreListe.elementCourant())) {
+                elementsSupprimes.ajouter(autreListe.elementCourant());
+            }
+        }
+
+        this.debut();
+
         return elementsSupprimes;
     }
 

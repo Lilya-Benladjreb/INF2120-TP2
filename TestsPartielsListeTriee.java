@@ -197,20 +197,4 @@ public class TestsPartielsListeTriee {
       }
 
    } //fin main
-/*   public static void main(String[] args) {
-      Maillon <Integer> element1 = new Maillon<>(1);
-      Maillon <Integer> element2 = new Maillon<>(2);
-      Maillon <Integer> element3 = new Maillon<>(3);
-      Maillon <Integer> element4 = new Maillon<>(4);
-
-      element1.modifierSuivant(element2);
-      element2.modifierSuivant(element3);
-      element3.modifierSuivant(element4);
-
-      System.out.println(element1.info());
-      System.out.println(element1.suivant().suivant().suivant().suivant());
-
-
-   }*/
-
 }
